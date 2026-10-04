@@ -1,0 +1,39 @@
+# Draftcat v0.9 configuration example; validate before configuring a real operator.
+# Limits are settled-usage stop thresholds, not prepaid ceilings.
+# Channel security strips formatting; it does not prevent prompt injection.
+telegram:
+  token_env: DRAFTCAT_TG_TOKEN
+  security:
+    allowed_users: [1] # synthetic validation identity; replace through operator-owned setup
+    max_input_length: 500
+    rate_limit: 10
+    strip_markdown: true
+provider:
+  type: openrouter
+  api_key_env: OPENROUTER_API_KEY
+  base_url: https://openrouter.ai/api/v1
+models:
+  example:
+    model: openai/gpt-4o-mini
+    max_tokens: 256
+roles:
+  classifier: example
+  drafter: example
+budgets:
+  per_step_tokens: 256
+  per_pipeline_tokens: 1024
+  per_day_tokens: 10000
+timeouts:
+  ai_call: 30s
+  operator_approval: 4h
+  pipeline_total: 5m
+pipelines:
+  - name: example-review
+    schedule: manual
+    steps:
+      - name: draft
+        type: ai
+        skill: example-response
+      - name: review
+        type: approval
+        channel: telegram

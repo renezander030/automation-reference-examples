@@ -1,0 +1,21 @@
+name: Reference contracts
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: go test -race ./...
+      - run: node --test node/regression.test.mjs
+      - run: python3 -m unittest discover -s tests -v
