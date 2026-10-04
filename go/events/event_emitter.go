@@ -10,7 +10,7 @@ import (
 type EventHandler func(ctx context.Context, data interface{}) error
 
 // EventEmitter provides a thread-safe pub/sub event bus.
-// Emit waits for at most eight concurrent handlers and reports errors/panics.
+// Emit waits for at most eight concurrent handlers per call and reports errors/panics.
 // Handlers must cooperate with context cancellation; delivery is in-process only.
 type EventEmitter struct {
 	mu       sync.RWMutex
