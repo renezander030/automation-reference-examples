@@ -43,3 +43,7 @@ SQLite FULL relies on a filesystem honoring sync/locking. Unit tests do not simu
 ## Contributing
 
 Include a small failing input, runtime/version and desired contract. Use synthetic data; remove credentials and customer records. Follow [@renezander030](https://github.com/renezander030) for the accompanying tested notes. MIT licensed.
+
+## Local Claude startup helper
+
+The [startup helper](local/start-claude-code-local.sh) and [mock process-ownership tests](local/startup.test.sh) maintain the corrected example from the archived local-ai-coding-stack repository. It never downloads a model, requires LOCAL_MODEL, clears a conflicting Anthropic API key and refuses to reuse an existing server with unknown context. Run `bash local/startup.test.sh`. No successful fresh hardware coding benchmark is claimed.

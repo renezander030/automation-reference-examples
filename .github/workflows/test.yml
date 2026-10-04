@@ -19,3 +19,4 @@ jobs:
       - run: go test -race ./...
       - run: node --test node/regression.test.mjs
       - run: python3 -m unittest discover -s tests -v
+      - run: bash local/startup.test.sh
