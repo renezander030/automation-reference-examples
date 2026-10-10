@@ -8,7 +8,7 @@ Requirements: Go 1.24+, Node 22+, Python 3.13+, Bash 4+, Linux/Unix for flock. G
 
 ```bash
 go test -race ./...
-node --test node/regression.test.mjs
+node --test node/*.test.mjs
 python3 -m unittest discover -s tests -v
 ```
 
@@ -20,6 +20,8 @@ python3 -m unittest discover -s tests -v
 | python/drain.py | Immutable batches, durable completed IDs, uncertain starts held | One host; no automatic replay of ambiguous external effects |
 | python/exec_guard.py | Malformed input blocks, DNS patterns, package commands, canonical cwd | Pattern tripwire, not a shell parser or sandbox |
 | python/approval.py | Action/payload/target/version/expiry binding, revocation, insert failure | Local authorization/outbox, not proof of external delivery; provider CAS needed |
+| python/conditional_write.py | Persisted ETags and atomic SQLite version checks across processes | One document; permission checks and remote effects remain separate |
+| node/tool-result.mjs | Missing/invalid tool calls, task assertions and bounded model-only alternatives | Explicit acceptance fixture, not an automatic LiteLLM plugin or tool dispatcher |
 | python/budget.py | Atomic concurrent token/currency reservations and settlement | Caller must bound all billed components; not integrated into draftcat |
 | node/retrieval.mjs | Hung/rejected branches settle by deadlines; signals cancel | Ignored cancellation may leave work running; semantic-only results may be lost |
 | python/acl.py | Current permission checks, revoked provenance and visible counts | Remote permission/load atomicity requires provider snapshots |
@@ -31,6 +33,35 @@ python3 -m unittest discover -s tests -v
 Redis Pub/Sub is at-most-once. A retained failed batch can duplicate if a failed command reached Redis. The publisher reports errors; it does not create durable retries. Redis quota tests cover validation/UTC keys; a live Redis deployment is not exercised by the offline suite.
 
 SQLite FULL relies on a filesystem honoring sync/locking. Unit tests do not simulate a hardware power cut. An approval/outbox row is distinct from an external effect, and a caller-attested outcome is distinct from independently observed execution. Keep uncertain outcomes until reconciled.
+
+## Preserve a human edit when two writers race
+
+Run the localhost HTTP example with no credentials:
+
+```bash
+python3 python/conditional_write_demo.py
+python3 -m unittest discover -s tests -p test_conditional_write.py -v
+```
+
+The demo refuses stale/weak tags with 412 and a missing condition with 428. Two
+writers holding one version produce one success and one refusal. The tests also
+use separate processes and reopen the SQLite file to check persisted versions.
+The HTTP wrapper is a teaching fixture on loopback, not a production web service.
+It accepts one exact ETag, rejects wildcard/list requests by endpoint policy, and
+does not implement approvals, authentication or idempotent external delivery.
+
+## Check the tool result before calling a model response successful
+
+```bash
+node --test node/tool-result.test.mjs
+```
+
+`requireToolUse` checks one required Anthropic-format call against a supplied input
+validator. `requireTaskSuccess` separately checks tool execution and task assertions.
+`acceptedModelResponse` demonstrates at most two caller-allowed model destinations
+under one deadline, before any tool is executed. It does not install a LiteLLM hook
+or replay a failed/uncertain external action. See the tests for provider errors,
+200-with-prose, wrong arguments, task failure and a hanging response.
 
 ## Related notes
 
